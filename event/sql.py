@@ -22,16 +22,18 @@ class MySQl:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connect.close()
 
-    def get_item_from_id(self, _itemid):
+    def get_item(self, _id, _type="id"):
         """
         通过物品id从数据库获取该物品的信息
-        :param _itemid:物品ID
+        :param _id:物品ID
+        :param _type:id类型：id、bar_code_id、qrcode_id、rf_id
         :return: Item
         """
         cursor = self.connect.cursor()
         sql = f'''
-        select * from item where id = {_itemid}
+        select * from item where {_type} = {_id}
         '''
+
         cursor.execute(sql)
 
         sql_data: dict = cursor.fetchone()

@@ -39,10 +39,14 @@ class Item:
         ''')
 
 
+from event.sql import MySQl
+
+
 class Buy_Item_List:  # 购买列表处理类
     def __init__(self):
         self.list = {}
         self.all_price = 0
+        self.sql = MySQl()
 
     # 往列表添加一个item
     def add_item(self, item: Item):
@@ -52,6 +56,9 @@ class Buy_Item_List:  # 购买列表处理类
             self.list[item.id] = item
         self.refresh_all_price()
         return item
+
+    def add_sql_item(self, _id, _type):
+        pass
 
     # 从指定的itemid减少一个数量
     def reduce_item_from_id(self, itemid):

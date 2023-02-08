@@ -52,7 +52,7 @@ class QRcode_dialog(QDialog):
 
             for item_id in guide_id_dict:
                 item_num = guide_id_dict[item_id]
-                item = self.sql.get_item_from_id(item_id)
+                item = self.sql.get_item(item_id)
                 item.set_num(item_num)
                 guide_list.append(item)
 

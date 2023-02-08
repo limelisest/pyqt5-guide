@@ -8,6 +8,7 @@ from ui_logic import QRcode_dialog
 from event.item import Item, Buy_Item_List
 from event.guide import Guide
 from event.qrcode import QRCodeThread
+from event.sql import MySQl
 
 
 class MyWindow(QMainWindow):
@@ -17,6 +18,7 @@ class MyWindow(QMainWindow):
         # 类初始化
         self.guide = Guide()
         self.buy_list = Buy_Item_List()
+        self.sql = MySQl()
         # 设置窗口
         self.ui = Ui_main.Ui_MainWindow()
         self.app = QApplication(sys.argv)
@@ -67,34 +69,30 @@ class MyWindow(QMainWindow):
 
     # debug 按键
     def exit(self):  # 退出按钮
-        self.qrcode_thread.terminate()
+        self.qrcode_thread.quit()
         self.app.quit()
 
     def debug_2(self):
-        self.buy_list_add_item(Item(
-            itemid=0,
-            name="衬衫",
-            price=99.9
-
-        ))
+        self.buy_list_add_item(0)
 
     def debug_3(self):
         for i in range(3):
-            self.buy_list_add_item(Item(itemid=i + 1, name="蔡徐坤", price=100, num=4))
+            self.buy_list_add_item(i)
 
-    def buy_list_add_item(self, item):
+    def buy_list_add_item(self, _id, _type="id"):
         """
         从结算列表里添加一个item
-        :param item:
+        :param _id: str
+        :param _type: id类型：id、bar_id、qr_id、rf_id
         :return:
         """
+        item = self.sql.get_item(_id, _type)
         self.buy_list.add_item(item)
         self.ui.label_price.setText(f'{round(item.price, 2)} 元')
         self.ui.label_title.setText(f'{item.name}')
         self.ui.tabWidget.setCurrentIndex(1)
         # 判断添加的物品是否在导购列表里
         if self.guide.list.in_list(item.id):
-            print(f"{item.id}他在里面")
             self.guide.list.reduce_item_from_id(item.id, item.num)
         self.buy_list_refresh()
         self.guide_list_refresh()
@@ -131,7 +129,6 @@ class MyWindow(QMainWindow):
             item = self.buy_list.list[item_id]
             self.ui.label_all_price.setText(f'{self.buy_list.all_price} 元')
             self.buy_list_add_ui(item)
-        print(self.buy_list.all_price)
         if self.buy_list.all_price == 0:
             self.ui.label_all_price.setText(f'0 元')
 

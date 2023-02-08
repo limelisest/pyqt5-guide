@@ -16,7 +16,6 @@ class MyWindow(QMainWindow):
         super().__init__(parent, Qt.Window)
         # 类初始化
         self.guide = Guide()
-        self.guide_list_sorted = None
         self.buy_list = Buy_Item_List()
         # 设置窗口
         self.ui = Ui_main.Ui_MainWindow()
@@ -55,12 +54,11 @@ class MyWindow(QMainWindow):
             """
             self.guide.set_list(guide_list)
             self.guide.list.sorted()
-            self.guide_list_sorted = self.guide.list.sort()
-            if self.guide_list_sorted:
-                for item in self.guide_list_sorted:
+            if self.guide.get_list():
+                for item in self.guide.get_list():
                     self.guide_list_add_ui(item)
-                self.ui.label_guide_item_name.setText(f'{self.guide_list_sorted[0].name}')
-                self.ui.label_guide_item_area.setText(f'{self.guide_list_sorted[0].area}')
+                self.ui.label_guide_item_name.setText(f'{self.guide.get_list()[0].name}')
+                self.ui.label_guide_item_area.setText(f'{self.guide.get_list()[0].area}')
             print(f"qrcode_dialog return:{guide_list}")
 
         qrcode_dialog = QRcode_dialog.QRcode_dialog()
@@ -82,7 +80,7 @@ class MyWindow(QMainWindow):
 
     def debug_3(self):
         for i in range(3):
-            self.buy_list_add_item(Item(i + 1, f"蔡徐坤", 100, 4))
+            self.buy_list_add_item(Item(itemid=i + 1, name="蔡徐坤", price=100, num=4))
 
     def buy_list_add_item(self, item):
         """
@@ -95,8 +93,11 @@ class MyWindow(QMainWindow):
         self.ui.label_title.setText(f'{item.name}')
         self.ui.tabWidget.setCurrentIndex(1)
         # 判断添加的物品是否在导购列表里
-
+        if self.guide.list.in_list(item.id):
+            print(f"{item.id}他在里面")
+            self.guide.list.reduce_item_from_id(item.id, item.num)
         self.buy_list_refresh()
+        self.guide_list_refresh()
         self.ui.list_buy.scrollToBottom()
 
     def buy_list_reduce_item(self, itemid):
@@ -108,7 +109,16 @@ class MyWindow(QMainWindow):
         self.buy_list.reduce_item_from_id(itemid)
         self.buy_list_refresh()
 
-    # 刷新列表
+    # 刷新预购列表
+    def guide_list_refresh(self):
+        self.ui.list_guide.clear()
+        if self.guide.get_list():
+            for item in self.guide.get_list():
+                self.guide_list_add_ui(item)
+            self.ui.label_guide_item_name.setText(f'{self.guide.get_list()[0].name}')
+            self.ui.label_guide_item_area.setText(f'{self.guide.get_list()[0].area}')
+
+    # 刷新购买列表
     def buy_list_refresh(self):
         """
         刷新结算列表

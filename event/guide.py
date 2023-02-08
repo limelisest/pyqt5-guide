@@ -44,11 +44,14 @@ class Guide:
     def list(self):
         return self._list
 
+    def get_list(self):
+        return self._list.list
+
     # 列表类
     class List:
 
         def __init__(self, _list, _start):
-            self._list = _list
+            self._list: list = _list
             self._start = _start
 
         def sort(self):
@@ -81,14 +84,24 @@ class Guide:
             """
             self._list = self.sort()
 
-        # # 从指定的itemid减少一个数量
-        # def reduce_item_from_id(self, itemid):
-        #     item_list = self._list[itemid]
-        #     if item_list.num > 1:
-        #         self._list[itemid].num -= 1
-        #     else:
-        #         del self._list[itemid]
-        #     return itemid
+        def reduce_item_from_id(self, itemid, num):
+            """
+            指定itemid，减少预购列表中的数量直到删除
+            :param num: int
+            :param itemid: int
+            :return:
+            """
+            for item in self._list:
+                if itemid == item.id:
+                    item.reduce_num(num)
+                    if item.num <= 0:
+                        self._list.remove(item)
+
+        def in_list(self, itemid):
+            for item in self._list:
+                if itemid == item.id:
+                    return True
+            return False
 
         def print(self):
             line: Item  # line 是一个Item类型的对象
@@ -96,3 +109,7 @@ class Guide:
             for line in self._list:
                 temp += f'id:{line.id},name:{line.name},price:{line.price},num:{line.num},area:{line.area}\n'
             return temp
+
+        @property
+        def list(self):
+            return self._list

@@ -22,6 +22,9 @@ class Item:
     def add_num(self, add_num):
         self.num += add_num
 
+    def reduce_num(self, reduce_num):
+        self.num -= reduce_num
+
     def print(self):
         print(f'''
         id:{self.id}

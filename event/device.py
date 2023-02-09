@@ -20,3 +20,7 @@ def get_uuid():
 def reset_uuid():
     os.remove(f'{dir_name}{file_name}')
     get_uuid()
+
+
+def get_network_name():
+    pass

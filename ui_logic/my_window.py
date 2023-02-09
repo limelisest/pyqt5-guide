@@ -4,15 +4,16 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from ui import Ui_main
-from ui_logic import QRcode_dialog, operator_dialog
-import event.item
+from ui_logic import QRcode_dialog, operator_dialog, keyboard
 import event.sql
 import event.guide
+import event.item
 import event.qrcode
+import event.device
+import event.mqtt
 
 
 class MyWindow(QMainWindow):
-    # 构造函数
     def __init__(self, parent=None):
         super().__init__(parent, Qt.Window)
         # 类初始化
@@ -33,6 +34,23 @@ class MyWindow(QMainWindow):
         self.qrcode_thread = event.qrcode.QRCodeThread()
         self.qrcode_thread.signal.connect(self.qrcode_thread_callback)
         self.qrcode_thread.start()
+        # 键盘事件侦听
+        self.keyboard = keyboard.KeyBoard()
+        self.keyboard.key.connect(self.on_keyboard)
+
+        self.ui.button_num1.clicked.connect(self.open_keyboard)
+
+    def on_keyboard(self, msg):
+        if self.ui.line_user.hasFocus():
+            self.ui.line_user.setText(f'{self.ui.line_user.text()}{msg}')
+
+    def open_keyboard(self):
+        print("显示键盘")
+        self.keyboard.move(120,260)
+        self.keyboard.show()
+
+    def close_keyboard(self):
+        print("关闭键盘")
 
     def enter_operator(self):
         def op_quit(msg):
@@ -49,7 +67,6 @@ class MyWindow(QMainWindow):
             op_dialog.exec_()
         else:
             self.ui.label_op_error.setText(f"账号：{op_user}密码错误或者不存在")
-
 
     # 识别线程callback
     def qrcode_thread_callback(self, item):
@@ -237,3 +254,7 @@ class MyWindow(QMainWindow):
 
         self.ui.list_guide.addItem(item)
         self.ui.list_guide.setItemWidget(item, wight_1)  # 将布局应用给item
+
+    @property
+    def key(self):
+        return self._key

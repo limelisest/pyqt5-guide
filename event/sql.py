@@ -37,15 +37,34 @@ class MySQl:
         cursor.execute(sql)
 
         sql_data: dict = cursor.fetchone()
+        if sql_data:
+            item = Item(
+                itemid=sql_data['id'],  # 数据库主键
+                qrcode_id=sql_data['qrcode_id'],  # 二维码
+                bar_code_id=sql_data['bar_code_id'],  # 条形码
+                rf_id=sql_data['rf_id'],  # RFID
+                name=sql_data['name'],  # 名字
+                price=sql_data['price'],  # 价格
+                area=[sql_data['area_x'], sql_data['area_y']],  # 坐标
+                info=sql_data['info']  # 信息
+            )
+            return item
+        else:
+            return False
 
-        item = Item(
-            itemid=sql_data['id'],  # 数据库主键
-            qrcode_id=sql_data['qrcode_id'],  # 二维码
-            bar_code_id=sql_data['bar_code_id'],  # 条形码
-            rf_id=sql_data['rf_id'],  # RFID
-            name=sql_data['name'],  # 名字
-            price=sql_data['price'],  # 价格
-            area=[sql_data['area_x'], sql_data['area_y']],  # 坐标
-            info=sql_data['info']  # 信息
-        )
-        return item
+    def check_operator(self, _user, _password):
+        sql_password = ''
+        cursor = self.connect.cursor()
+        sql = f'''
+                select * from operator where user_name = {_user}
+                '''
+
+        cursor.execute(sql)
+
+        sql_data: dict = cursor.fetchone()
+        if sql_data:
+            sql_password = sql_data['password']
+            if _password == sql_password:
+                return True
+        else:
+            return False

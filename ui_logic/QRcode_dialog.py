@@ -3,8 +3,6 @@ import json
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
-from event.item import Item
 from event.sql import MySQl
 from ui import QRcode
 from event.mqtt import MQTTThread, device
@@ -53,8 +51,9 @@ class QRcode_dialog(QDialog):
             for item_id in guide_id_dict:
                 item_num = guide_id_dict[item_id]
                 item = self.sql.get_item(item_id)
-                item.set_num(item_num)
-                guide_list.append(item)
+                if item:
+                    item.set_num(item_num)
+                    guide_list.append(item)
 
             self._signal.emit(guide_list)
             self.close()

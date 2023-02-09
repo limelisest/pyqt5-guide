@@ -53,18 +53,17 @@ class MySQl:
             return False
 
     def check_operator(self, _user, _password):
-        sql_password = ''
+        print(f"Enter:{_user},{_password}")
         cursor = self.connect.cursor()
         sql = f'''
-                select * from operator where user_name = {_user}
+                select * from operator where user_name = '{_user}' and password = '{_password}'
                 '''
 
         cursor.execute(sql)
 
         sql_data: dict = cursor.fetchone()
+        print(sql_data)
         if sql_data:
-            sql_password = sql_data['password']
-            if _password == sql_password:
-                return True
+            return sql_data['level']
         else:
             return False

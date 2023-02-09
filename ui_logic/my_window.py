@@ -4,11 +4,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from ui import Ui_main
-from ui_logic import QRcode_dialog
-from event.item import Item, Buy_Item_List
-from event.guide import Guide
-from event.qrcode import QRCodeThread
-from event.sql import MySQl
+from ui_logic import QRcode_dialog, operator_dialog
+import event.item
+import event.sql
+import event.guide
+import event.qrcode
 
 
 class MyWindow(QMainWindow):
@@ -16,12 +16,11 @@ class MyWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent, Qt.Window)
         # 类初始化
-        self.guide = Guide()
-        self.buy_list = Buy_Item_List()
-        self.sql = MySQl()
+        self.guide = event.guide.Guide()
+        self.buy_list = event.item.Buy_Item_List()
+        self.sql = event.sql.MySQl()
         # 设置窗口
         self.ui = Ui_main.Ui_MainWindow()
-        self.app = QApplication(sys.argv)
         self.ui.setupUi(self)
         self.showFullScreen()
         # 事件绑定
@@ -29,10 +28,28 @@ class MyWindow(QMainWindow):
         self.ui.button_debug_2.clicked.connect(self.debug_2)
         self.ui.button_debug_3.clicked.connect(self.debug_3)
         self.ui.button_add_guide_list.clicked.connect(self.open_qrcode_dialog)
+        self.ui.button_enter_operator.clicked.connect(self.enter_operator)
         # 多线程
-        self.qrcode_thread = QRCodeThread()
+        self.qrcode_thread = event.qrcode.QRCodeThread()
         self.qrcode_thread.signal.connect(self.qrcode_thread_callback)
         self.qrcode_thread.start()
+
+    def enter_operator(self):
+        def op_quit(msg):
+            if msg == "quit":
+                self.close()
+
+        op_user = self.ui.line_user.text()
+        op_password = self.ui.line_password.text()
+        level = self.sql.check_operator(op_user, op_password)
+        if level:
+            op_dialog = operator_dialog.OperatorDialog()
+            op_dialog.signal.emit([op_user, level])  # 发送数据
+            op_dialog.signal.connect(op_quit)  # 接收数据
+            op_dialog.exec_()
+        else:
+            self.ui.label_op_error.setText(f"账号：{op_user}密码错误或者不存在")
+
 
     # 识别线程callback
     def qrcode_thread_callback(self, item):
@@ -41,7 +58,7 @@ class MyWindow(QMainWindow):
         :param item:
         :return:
         """
-        self.buy_list_add_item(Item(
+        self.buy_list_add_item(event.item.Item(
             itemid=item.id,
             price=item.price,
             name=item.name
@@ -70,7 +87,7 @@ class MyWindow(QMainWindow):
     # debug 按键
     def exit(self):  # 退出按钮
         self.qrcode_thread.quit()
-        self.app.quit()
+        self.close()
 
     def debug_2(self):
         self.buy_list_add_item(0)
@@ -133,7 +150,7 @@ class MyWindow(QMainWindow):
             self.ui.label_all_price.setText(f'0 元')
 
     # 添加列表
-    def buy_list_add_ui(self, item: Item):
+    def buy_list_add_ui(self, item: event.item.Item):
         """
         通过自定义布局往结算列表添加一个项目
         该布局包含三个标签和一个按钮，数据内容:
@@ -183,7 +200,7 @@ class MyWindow(QMainWindow):
         self.ui.list_buy.addItem(item)
         self.ui.list_buy.setItemWidget(item, wight_1)  # 将布局应用给item
 
-    def guide_list_add_ui(self, item: Item):
+    def guide_list_add_ui(self, item: event.item.Item):
         """
         通过自定义布局往导购列表添加一个项目
         map_name = QLabel(f'{name}')

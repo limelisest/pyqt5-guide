@@ -502,10 +502,10 @@
       <widget class="QWidget" name="formLayoutWidget">
        <property name="geometry">
         <rect>
-         <x>20</x>
+         <x>10</x>
          <y>30</y>
-         <width>311</width>
-         <height>91</height>
+         <width>321</width>
+         <height>81</height>
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout">
@@ -546,6 +546,31 @@
        </property>
        <property name="text">
         <string>登入</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_op_error">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>120</y>
+         <width>321</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>黑体</family>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color:#ff0000</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </widget>

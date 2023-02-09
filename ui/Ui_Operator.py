@@ -82,6 +82,9 @@ class Ui_OperatorDialog(object):
         self.button_change_password = QtWidgets.QPushButton(self.groupBox_3)
         self.button_change_password.setGeometry(QtCore.QRect(80, 150, 131, 31))
         self.button_change_password.setObjectName("button_change_password")
+        self.button_close = QtWidgets.QPushButton(OperatorDialog)
+        self.button_close.setGeometry(QtCore.QRect(664, 422, 131, 51))
+        self.button_close.setObjectName("button_close")
 
         self.retranslateUi(OperatorDialog)
         QtCore.QMetaObject.connectSlotsByName(OperatorDialog)
@@ -100,3 +103,4 @@ class Ui_OperatorDialog(object):
         self.label_2.setText(_translate("OperatorDialog", "新密码"))
         self.label_3.setText(_translate("OperatorDialog", "再次输入"))
         self.button_change_password.setText(_translate("OperatorDialog", "确定"))
+        self.button_close.setText(_translate("OperatorDialog", "关闭面板"))

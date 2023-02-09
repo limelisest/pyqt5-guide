@@ -1,5 +1,5 @@
 from decimal import Decimal
-
+import event.sql
 
 class Item:
     def __init__(self, itemid, qrcode_id=None, rf_id=None, bar_code_id=None, name="unknown", info="unknown", area=None,
@@ -39,14 +39,11 @@ class Item:
         ''')
 
 
-from event.sql import MySQl
-
-
 class Buy_Item_List:  # 购买列表处理类
     def __init__(self):
         self.list = {}
         self.all_price = 0
-        self.sql = MySQl()
+        self.sql = event.sql.MySQl()
 
     # 往列表添加一个item
     def add_item(self, item: Item):

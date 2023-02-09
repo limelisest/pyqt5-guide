@@ -53,17 +53,28 @@ class MySQl:
             return False
 
     def check_operator(self, _user, _password):
-        print(f"Enter:{_user},{_password}")
+        print(f"【Operator Dialog】Enter:{_user},{_password}")
         cursor = self.connect.cursor()
-        sql = f'''
-                select * from operator where user_name = '{_user}' and password = '{_password}'
-                '''
+        sql = f"select * from operator where user_name = '{_user}' and password = '{_password}'"
 
         cursor.execute(sql)
 
         sql_data: dict = cursor.fetchone()
-        print(sql_data)
+        print(f'【Operator Dialog】{sql_data}')
         if sql_data:
             return sql_data['level']
+        else:
+            return False
+
+    def change_operator(self, _user, old_password, new_password):
+        if self.check_operator(_user, old_password):
+            cursor = self.connect.cursor()
+            try:
+                # 修改密码
+                sql = f"update operator set password = '{new_password}' where user_name='{_user}'"
+                cursor.execute(sql)
+                return True
+            except pymysql.Error:
+                return False
         else:
             return False

@@ -23,13 +23,16 @@ class MyWindow(QMainWindow):
         # 设置窗口
         self.ui = Ui_main.Ui_MainWindow()
         self.ui.setupUi(self)
-        self.showFullScreen()
+        self.setWindowState(Qt.WindowFullScreen)
+        # self.showFullScreen()
+        # self.setWindowFlags(Qt.FramelessWindowHint)
         # 事件绑定
         self.ui.button_debug_1.clicked.connect(self.exit)
         self.ui.button_debug_2.clicked.connect(self.debug_2)
         self.ui.button_debug_3.clicked.connect(self.debug_3)
         self.ui.button_add_guide_list.clicked.connect(self.open_qrcode_dialog)
         self.ui.button_enter_operator.clicked.connect(self.enter_operator)
+        self.ui.tabWidget.currentChanged.connect(self.tab_change)
         # 多线程
         self.qrcode_thread = event.qrcode.QRCodeThread()
         self.qrcode_thread.signal.connect(self.qrcode_thread_callback)
@@ -37,20 +40,57 @@ class MyWindow(QMainWindow):
         # 键盘事件侦听
         self.keyboard = keyboard.KeyBoard()
         self.keyboard.key.connect(self.on_keyboard)
-
         self.ui.button_num1.clicked.connect(self.open_keyboard)
 
+    def tab_change(self):
+        """
+        检测页面改变的时候自动关闭打开键盘
+        :return:
+        """
+        if self.ui.tabWidget.currentIndex() == 2:
+            self.open_keyboard()
+        else:
+            self.close_keyboard()
+
     def on_keyboard(self, msg):
-        if self.ui.line_user.hasFocus():
+        """
+        收到键盘信号时候的处理
+        :param msg: str
+        :return:
+        """
+        if msg == "enter":
+            if self.ui.line_user.hasFocus():
+                self.ui.line_password.setFocus()
+            elif self.ui.line_password.hasFocus():
+                self.ui.button_enter_operator.click()
+        elif msg == "back":
+            if self.ui.line_user.hasFocus():
+                self.ui.line_user.setText(f'{self.ui.line_user.text()[:len(self.ui.line_user.text()) - 1]}')
+            elif self.ui.line_password.hasFocus():
+                self.ui.line_password.setText(f'{self.ui.line_password.text()[:len(self.ui.line_password.text()) - 1]}')
+        elif msg == "left":
+            if self.ui.line_user.hasFocus():
+                self.ui.line_user.cursorBackward(False, 1)
+            elif self.ui.line_password.hasFocus():
+                self.ui.line_password.cursorBackward(False, 1)
+        elif msg == "right":
+            if self.ui.line_user.hasFocus():
+                self.ui.line_user.cursorForward(False, 1)
+            elif self.ui.line_password.hasFocus():
+                self.ui.line_password.cursorForward(False, 1)
+        elif self.ui.line_user.hasFocus():
             self.ui.line_user.setText(f'{self.ui.line_user.text()}{msg}')
+        elif self.ui.line_password.hasFocus():
+            self.ui.line_password.setText(f'{self.ui.line_password.text()}{msg}')
 
     def open_keyboard(self):
         print("显示键盘")
-        self.keyboard.move(120,260)
+        self.keyboard.move(120, 300)
         self.keyboard.show()
 
     def close_keyboard(self):
         print("关闭键盘")
+        self.keyboard.close()
 
     def enter_operator(self):
         def op_quit(msg):
@@ -61,6 +101,7 @@ class MyWindow(QMainWindow):
         op_password = self.ui.line_password.text()
         level = self.sql.check_operator(op_user, op_password)
         if level:
+            self.keyboard.close()
             op_dialog = operator_dialog.OperatorDialog()
             op_dialog.signal.emit([op_user, level])  # 发送数据
             op_dialog.signal.connect(op_quit)  # 接收数据

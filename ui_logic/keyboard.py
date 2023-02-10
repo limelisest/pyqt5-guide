@@ -3,15 +3,16 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 
-class KeyBoard(QWidget):
+class KeyBoard(QDialog):
     _key = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
         # 窗口初始化
         self.level = None
-        self.ui = Ui_Keyboard.Ui_Form()
+        self.ui = Ui_Keyboard.Ui_Dialog()
         self.ui.setupUi(self)
+        self.setWindowModality(Qt.WindowModal)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus)
         # 按键绑定
         self.ui.button_num1.clicked.connect(lambda: self._key.emit(f'{self.ui.button_num1.text()}'))
@@ -54,6 +55,10 @@ class KeyBoard(QWidget):
         self.ui.button_m.clicked.connect(lambda: self._key.emit(f'{self.ui.button_m.text()}'))
 
         self.ui.button_cap.clicked.connect(self.key_CAP)
+        self.ui.button_enter.clicked.connect(lambda: self._key.emit('enter'))
+        self.ui.button_back.clicked.connect(lambda: self._key.emit('back'))
+        self.ui.button_left.clicked.connect(lambda: self._key.emit('left'))
+        self.ui.button_right.clicked.connect(lambda: self._key.emit('right'))
 
     def key_CAP(self):
         if self.ui.button_cap.text() == "大写":

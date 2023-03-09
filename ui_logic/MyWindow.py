@@ -1,10 +1,11 @@
 import sys
 
 from PyQt5.QtCore import *
+from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtWidgets import *
 
-from ui import Ui_main
-from ui_logic import QRcode_dialog, operator_dialog, keyboard
+from ui import Ui_main, Ui_Keyboard
+from ui_logic import QRcode_dialog, Operator, KeyBoard
 import event.sql
 import event.guide
 import event.item
@@ -23,34 +24,96 @@ class MyWindow(QMainWindow):
         # 设置窗口
         self.ui = Ui_main.Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowState(Qt.WindowFullScreen)
-        # self.showFullScreen()
-        # self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.move(0, 0)
+        self.init_map()
         # 事件绑定
-        self.ui.button_debug_1.clicked.connect(self.exit)
         self.ui.button_debug_2.clicked.connect(self.debug_2)
         self.ui.button_debug_3.clicked.connect(self.debug_3)
         self.ui.button_add_guide_list.clicked.connect(self.open_qrcode_dialog)
         self.ui.button_enter_operator.clicked.connect(self.enter_operator)
-        self.ui.tabWidget.currentChanged.connect(self.tab_change)
+        self.ui.list_guide.itemClicked.connect(self.list_guide_item_select)
         # 多线程
         self.qrcode_thread = event.qrcode.QRCodeThread()
         self.qrcode_thread.signal.connect(self.qrcode_thread_callback)
         self.qrcode_thread.start()
         # 键盘事件侦听
-        self.keyboard = keyboard.KeyBoard()
-        self.keyboard.key.connect(self.on_keyboard)
-        self.ui.button_num1.clicked.connect(self.open_keyboard)
+        widget_ui = Ui_Keyboard.Ui_KeyBoardWidget()
+        widget_ui.setupUi(self.ui.widget_keyboard)
+        keyboard = KeyBoard.KeyBoard()
+        keyboard.key.connect(self.on_keyboard)
+        keyboard.init_key(widget_ui)
 
-    def tab_change(self):
+    def list_guide_item_select(self):
         """
-        检测页面改变的时候自动关闭打开键盘
+        在地图上高亮选中的地点
         :return:
         """
-        if self.ui.tabWidget.currentIndex() == 2:
-            self.open_keyboard()
-        else:
-            self.close_keyboard()
+        count = 0
+        for item in self.guide.get_list():
+            count += 1
+            area_x, area_y = item.area
+            self.map_draw_point(area_x, area_y, f"{count}", 3)
+
+        index = self.ui.list_guide.currentRow()
+        x, y = self.guide.get_list()[index].area
+        self.map_draw_point(x, y, f'{index + 1}', 2, 0)
+
+    def init_map(self):
+        """
+        初始化导购地图
+        :return:
+        """
+        table_w = self.ui.tableWidget.geometry().width()
+        table_h = self.ui.tableWidget.geometry().height()
+        box_w = int(table_w / 16) - 1
+        box_h = int(table_h / 16) - 1
+        self.ui.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        self.ui.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        self.ui.tableWidget.horizontalHeader().setDefaultSectionSize(box_w)
+        self.ui.tableWidget.verticalHeader().setDefaultSectionSize(box_h)
+        self.ui.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        for y in range(16):
+            for x in range(16):
+                item = QTableWidgetItem()
+                if self.guide.map[x][y] == 0:
+                    item.setBackground(QColor(0, 0, 0, 200))
+                item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+                self.ui.tableWidget.setItem(x, y, item)
+
+    def map_draw_point(self, x: int, y: int, text='', backgroundColor=1, textColor=0):
+        """
+        从地图上绘制一个格子。颜色：0:黑色, 1:白色, 2:紫色, 3:灰色
+        """
+        color_black = QColor(0, 0, 0, 200)
+        color_white = QColor(255, 255, 255, 255)
+        color_purple = QColor(222, 200, 249, 255)
+        color_gery = QColor(125, 125, 125)
+        table_item = QTableWidgetItem()
+        count = 0
+
+        if backgroundColor == 0:
+            table_item.setBackground(color_black)
+        elif backgroundColor == 1:
+            table_item.setBackground(color_white)
+        elif backgroundColor == 2:
+            table_item.setBackground(color_purple)
+        elif backgroundColor == 3:
+            table_item.setBackground(color_gery)
+
+        if textColor == 0:
+            table_item.setForeground(color_black)
+        elif textColor == 1:
+            table_item.setForeground(color_white)
+        elif textColor == 2:
+            table_item.setForeground(color_purple)
+        elif textColor == 3:
+            table_item.setForeground(color_gery)
+
+        table_item.setText(text)
+        table_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+        table_item.setTextAlignment(Qt.AlignCenter)
+        self.ui.tableWidget.setItem(y, x, table_item)
 
     def on_keyboard(self, msg):
         """
@@ -83,15 +146,6 @@ class MyWindow(QMainWindow):
         elif self.ui.line_password.hasFocus():
             self.ui.line_password.setText(f'{self.ui.line_password.text()}{msg}')
 
-    def open_keyboard(self):
-        print("显示键盘")
-        self.keyboard.move(120, 300)
-        self.keyboard.show()
-
-    def close_keyboard(self):
-        print("关闭键盘")
-        self.keyboard.close()
-
     def enter_operator(self):
         def op_quit(msg):
             if msg == "quit":
@@ -101,8 +155,7 @@ class MyWindow(QMainWindow):
         op_password = self.ui.line_password.text()
         level = self.sql.check_operator(op_user, op_password)
         if level:
-            self.keyboard.close()
-            op_dialog = operator_dialog.OperatorDialog()
+            op_dialog = Operator.OperatorDialog()
             op_dialog.signal.emit([op_user, level])  # 发送数据
             op_dialog.signal.connect(op_quit)  # 接收数据
             op_dialog.exec_()
@@ -110,30 +163,34 @@ class MyWindow(QMainWindow):
             self.ui.label_op_error.setText(f"账号：{op_user}密码错误或者不存在")
 
     # 识别线程callback
-    def qrcode_thread_callback(self, item):
+    def qrcode_thread_callback(self, data):
         """
         扫描线程收到信号后的处理
-        :param item:
+        :param data:[type,data]
         :return:
         """
-        self.buy_list_add_item(event.item.Item(
-            itemid=item.id,
-            price=item.price,
-            name=item.name
-        ))
+        qr_type, qr_data = data
+        print(f"f[QRCODE SCAN]type:<{qr_type}>,data:<{qr_data}>")
+        self.buy_list_add_item(qr_data, qr_type)
 
     def open_qrcode_dialog(self):
         # 添加购买列表
         def guide_list_refresh(guide_list):
             """
-            读取预购的列表 *暂时从已购买的列表中读取
+            读取预购的列表从MQTT读取
             :return:
             """
+            self.init_map()
             self.guide.set_list(guide_list)
             self.guide.list.sorted()
             if self.guide.get_list():
+                count = 0
                 for item in self.guide.get_list():
+                    count += 1
                     self.guide_list_add_ui(item)
+                    area_x, area_y = item.area
+                    self.map_draw_point(area_x, area_y, f"{count}", 3)
+
                 self.ui.label_guide_item_name.setText(f'{self.guide.get_list()[0].name}')
                 self.ui.label_guide_item_area.setText(f'{self.guide.get_list()[0].area}')
             print(f"qrcode_dialog return:{guide_list}")
@@ -142,17 +199,12 @@ class MyWindow(QMainWindow):
         qrcode_dialog.signal.connect(guide_list_refresh)
         qrcode_dialog.exec_()
 
-    # debug 按键
-    def exit(self):  # 退出按钮
-        self.qrcode_thread.quit()
-        self.close()
-
     def debug_2(self):
         self.buy_list_add_item(0)
 
     def debug_3(self):
         for i in range(3):
-            self.buy_list_add_item(i)
+            self.buy_list_add_item(i + 1)
 
     def buy_list_add_item(self, _id, _type="id"):
         """
@@ -162,16 +214,17 @@ class MyWindow(QMainWindow):
         :return:
         """
         item = self.sql.get_item(_id, _type)
-        self.buy_list.add_item(item)
-        self.ui.label_price.setText(f'{round(item.price, 2)} 元')
-        self.ui.label_title.setText(f'{item.name}')
-        self.ui.tabWidget.setCurrentIndex(1)
-        # 判断添加的物品是否在导购列表里
-        if self.guide.list.in_list(item.id):
-            self.guide.list.reduce_item_from_id(item.id, item.num)
-        self.buy_list_refresh()
-        self.guide_list_refresh()
-        self.ui.list_buy.scrollToBottom()
+        if item:
+            self.buy_list.add_item(item)
+            self.ui.label_price.setText(f'{round(item.price, 2)} 元')
+            self.ui.label_title.setText(f'{item.name}')
+            self.ui.tabWidget.setCurrentIndex(1)
+            # 判断添加的物品是否在导购列表里
+            if self.guide.list.in_list(item.id):
+                self.guide.list.reduce_item_from_id(item.id, item.num)
+            self.buy_list_refresh()
+            self.guide_list_refresh()
+            self.ui.list_buy.scrollToBottom()
 
     def buy_list_reduce_item(self, itemid):
         """
@@ -295,7 +348,3 @@ class MyWindow(QMainWindow):
 
         self.ui.list_guide.addItem(item)
         self.ui.list_guide.setItemWidget(item, wight_1)  # 将布局应用给item
-
-    @property
-    def key(self):
-        return self._key

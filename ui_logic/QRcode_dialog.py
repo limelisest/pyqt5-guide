@@ -20,7 +20,8 @@ class QRcode_dialog(QDialog):
         self.ui = QRcode.Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowModality(Qt.ApplicationModal)
-        self.showFullScreen()
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.move(0, 0)
         # 组件初始化
         self.init_qrcode()
         self.ui.label_qr_code.setScaledContents(True)

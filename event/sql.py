@@ -40,9 +40,9 @@ class MySQl:
         if sql_data:
             item = Item(
                 itemid=sql_data['id'],  # 数据库主键
-                qrcode_id=sql_data['qrcode_id'],  # 二维码
-                bar_code_id=sql_data['bar_code_id'],  # 条形码
-                rf_id=sql_data['rf_id'],  # RFID
+                qrcode_id=sql_data['QRCODE'],  # 二维码
+                bar_code_id=sql_data['EAN13'],  # 条形码
+                rf_id=sql_data['RFID'],  # RFID
                 name=sql_data['name'],  # 名字
                 price=sql_data['price'],  # 价格
                 area=[sql_data['area_x'], sql_data['area_y']],  # 坐标

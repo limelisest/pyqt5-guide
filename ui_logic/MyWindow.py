@@ -32,7 +32,7 @@ class MyWindow(QMainWindow):
         self.ui.button_debug_3.clicked.connect(self.debug_3)
         self.ui.button_add_guide_list.clicked.connect(self.open_qrcode_dialog)
         self.ui.button_enter_operator.clicked.connect(self.enter_operator)
-        self.ui.list_guide.itemClicked.connect(self.list_guide_item_select)
+        self.ui.list_guide.itemClicked.connect(self.list_guide_itemClicked)
         # 多线程
         self.qrcode_thread = event.qrcode.QRCodeThread()
         self.qrcode_thread.signal.connect(self.qrcode_thread_callback)
@@ -44,7 +44,7 @@ class MyWindow(QMainWindow):
         keyboard.key.connect(self.on_keyboard)
         keyboard.init_key(widget_ui)
 
-    def list_guide_item_select(self):
+    def list_guide_itemClicked(self):
         """
         在地图上高亮选中的地点
         :return:
@@ -58,6 +58,7 @@ class MyWindow(QMainWindow):
         index = self.ui.list_guide.currentRow()
         x, y = self.guide.get_list()[index].area
         self.map_draw_point(x, y, f'{index + 1}', 2, 0)
+
 
     def init_map(self):
         """
@@ -73,6 +74,8 @@ class MyWindow(QMainWindow):
         self.ui.tableWidget.horizontalHeader().setDefaultSectionSize(box_w)
         self.ui.tableWidget.verticalHeader().setDefaultSectionSize(box_h)
         self.ui.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.ui.tableWidget.setEnabled(False)
+        # 绘制地图
         for y in range(16):
             for x in range(16):
                 item = QTableWidgetItem()
@@ -81,16 +84,31 @@ class MyWindow(QMainWindow):
                 item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
                 self.ui.tableWidget.setItem(x, y, item)
 
+    def map_draw_points_on_guide(self):
+        # 绘制地图
+        for y in range(16):
+            for x in range(16):
+                item = QTableWidgetItem()
+                if self.guide.map[x][y] == 0:
+                    item.setBackground(QColor(0, 0, 0, 200))
+                item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+                self.ui.tableWidget.setItem(x, y, item)
+        count = 0
+        for item in self.guide.get_list():
+            count += 1
+            area_x, area_y = item.area
+            self.map_draw_point(area_x, area_y, f"{count}", 3)
+
     def map_draw_point(self, x: int, y: int, text='', backgroundColor=1, textColor=0):
         """
-        从地图上绘制一个格子。颜色：0:黑色, 1:白色, 2:紫色, 3:灰色
+        从地图上绘制一个格子。颜色：0:黑色, 1:白色, 2:紫色, 3:灰色 4:黄色
         """
         color_black = QColor(0, 0, 0, 200)
         color_white = QColor(255, 255, 255, 255)
         color_purple = QColor(222, 200, 249, 255)
         color_gery = QColor(125, 125, 125)
+        color_yellow = QColor(0, 255, 255, 125)
         table_item = QTableWidgetItem()
-        count = 0
 
         if backgroundColor == 0:
             table_item.setBackground(color_black)
@@ -100,6 +118,8 @@ class MyWindow(QMainWindow):
             table_item.setBackground(color_purple)
         elif backgroundColor == 3:
             table_item.setBackground(color_gery)
+        elif backgroundColor == 4:
+            table_item.setBackground(color_yellow)
 
         if textColor == 0:
             table_item.setForeground(color_black)
@@ -109,6 +129,8 @@ class MyWindow(QMainWindow):
             table_item.setForeground(color_purple)
         elif textColor == 3:
             table_item.setForeground(color_gery)
+        elif textColor == 4:
+            table_item.setForeground(color_yellow)
 
         table_item.setText(text)
         table_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
@@ -184,13 +206,10 @@ class MyWindow(QMainWindow):
             self.guide.set_list(guide_list)
             self.guide.list.sorted()
             if self.guide.get_list():
-                count = 0
                 for item in self.guide.get_list():
-                    count += 1
                     self.guide_list_add_ui(item)
-                    area_x, area_y = item.area
-                    self.map_draw_point(area_x, area_y, f"{count}", 3)
 
+                self.map_draw_points_on_guide()
                 self.ui.label_guide_item_name.setText(f'{self.guide.get_list()[0].name}')
                 self.ui.label_guide_item_area.setText(f'{self.guide.get_list()[0].area}')
             print(f"qrcode_dialog return:{guide_list}")
@@ -200,7 +219,9 @@ class MyWindow(QMainWindow):
         qrcode_dialog.exec_()
 
     def debug_2(self):
-        self.buy_list_add_item(0)
+        if self.guide.get_list():
+            item_id = self.guide.get_list()[0].id
+            self.buy_list_add_item(item_id)
 
     def debug_3(self):
         for i in range(3):
@@ -213,6 +234,7 @@ class MyWindow(QMainWindow):
         :param _type: id类型：id、bar_id、qr_id、rf_id
         :return:
         """
+
         item = self.sql.get_item(_id, _type)
         if item:
             self.buy_list.add_item(item)
@@ -222,6 +244,7 @@ class MyWindow(QMainWindow):
             # 判断添加的物品是否在导购列表里
             if self.guide.list.in_list(item.id):
                 self.guide.list.reduce_item_from_id(item.id, item.num)
+                self.map_draw_points_on_guide()
             self.buy_list_refresh()
             self.guide_list_refresh()
             self.ui.list_buy.scrollToBottom()

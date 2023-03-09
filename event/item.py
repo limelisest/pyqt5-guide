@@ -1,6 +1,7 @@
 from decimal import Decimal
 import event.sql
 
+
 class Item:
     def __init__(self, itemid, qrcode_id=None, rf_id=None, bar_code_id=None, name="unknown", info="unknown", area=None,
                  price=0, num=1):

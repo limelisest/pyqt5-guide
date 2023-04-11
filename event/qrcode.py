@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from pyzbar import pyzbar as pyzbar
 
-camera_id = 2
+camera_id = 0
 
 
 # 扫描线程

@@ -35,7 +35,7 @@ class MySQl:
         """
         cursor = self.connect.cursor()
         sql = f'''
-        select * from item where {_type} = {_id}
+        select * from item where {_type} = '{_id}'
         '''
 
         cursor.execute(sql)

@@ -13,6 +13,7 @@ import event.item
 import event.qrcode
 import event.device
 import event.mqtt
+import event.rfid
 
 
 class MyWindow(QMainWindow):
@@ -39,6 +40,9 @@ class MyWindow(QMainWindow):
         self.qrcode_thread = event.qrcode.QRCodeThread()
         self.qrcode_thread.signal.connect(self.qrcode_thread_callback)
         self.qrcode_thread.start()
+        self.rfid_thread = event.rfid.RFIDThread()
+        self.rfid_thread.signal.connect(self.rfid_thread_callback)
+        self.rfid_thread.start()
         # 键盘事件侦听
         widget_ui = Ui_Keyboard.Ui_KeyBoardWidget()
         widget_ui.setupUi(self.ui.widget_keyboard)
@@ -213,6 +217,10 @@ class MyWindow(QMainWindow):
         qr_type, qr_data = data
         print(f"f[QRCODE SCAN]type:<{qr_type}>,data:<{qr_data}>")
         self.buy_list_add_item(qr_data, qr_type)
+
+    def rfid_thread_callback(self, data):
+        print(f"f[RFID SCAN]id:<{data}>")
+        self.buy_list_add_item(data, "RFID")
 
     def open_qrcode_dialog(self):
         # 添加购买列表

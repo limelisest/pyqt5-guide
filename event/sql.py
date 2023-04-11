@@ -1,5 +1,9 @@
+import calendar
+import time
+
 import pymysql
 from event.item import Item
+from event.device import user_id
 
 _ip = '120.79.71.233'
 _port = 3306
@@ -77,4 +81,20 @@ class MySQl:
             except pymysql.Error:
                 return False
         else:
+            return False
+
+    def update_order(self, _list):
+        cursor = self.connect.cursor()
+        try:
+            current_gmt = time.gmtime()
+            time_stamp = calendar.timegm(current_gmt)
+            for line in _list:
+                item: Item = _list[line]
+                item_id = item.id
+                num = item.num
+                sql = f"insert into order_history set " \
+                      f"item_id='{item_id}',user_id='{user_id}',time='{time_stamp}',num='{num}'"
+                cursor.execute(sql)
+            return True
+        except pymysql.Error:
             return False

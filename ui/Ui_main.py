@@ -143,6 +143,7 @@ class Ui_MainWindow(object):
         font.setFamily("黑体")
         font.setPointSize(23)
         self.label_guide_item_name.setFont(font)
+        self.label_guide_item_name.setText("")
         self.label_guide_item_name.setAlignment(QtCore.Qt.AlignCenter)
         self.label_guide_item_name.setObjectName("label_guide_item_name")
         self.groupBox_6 = QtWidgets.QGroupBox(self.tab)
@@ -168,6 +169,7 @@ class Ui_MainWindow(object):
         font.setFamily("黑体")
         font.setPointSize(23)
         self.label_guide_item_area.setFont(font)
+        self.label_guide_item_area.setText("")
         self.label_guide_item_area.setAlignment(QtCore.Qt.AlignCenter)
         self.label_guide_item_area.setObjectName("label_guide_item_area")
         self.button_add_guide_list = QtWidgets.QPushButton(self.tab)
@@ -317,7 +319,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -389,10 +391,8 @@ class Ui_MainWindow(object):
         item = self.tableWidget.horizontalHeaderItem(15)
         item.setText(_translate("MainWindow", "P"))
         self.groupBox_5.setTitle(_translate("MainWindow", "下一个购买的物品"))
-        self.label_guide_item_name.setText(_translate("MainWindow", "TextLabel"))
         self.groupBox_6.setTitle(_translate("MainWindow", "购买顺序"))
         self.groupBox_7.setTitle(_translate("MainWindow", "坐标"))
-        self.label_guide_item_area.setText(_translate("MainWindow", "TextLabel"))
         self.button_add_guide_list.setText(_translate("MainWindow", "添加导购单"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "导购"))
         self.label.setText(_translate("MainWindow", "已购列表"))

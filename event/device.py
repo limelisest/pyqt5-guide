@@ -3,7 +3,7 @@ import uuid
 
 dir_name = './device'
 file_name = '/uuid.txt'
-
+user_id = 'admin'
 
 def get_uuid():
     if not os.path.exists(dir_name):  # 检测输出的文件夹是否存在

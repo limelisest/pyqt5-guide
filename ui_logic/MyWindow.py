@@ -4,6 +4,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtWidgets import *
 
+from event import device
 from ui import Ui_main, Ui_Keyboard
 from ui_logic import QRcode_dialog, Operator, KeyBoard
 import event.sql
@@ -33,6 +34,7 @@ class MyWindow(QMainWindow):
         self.ui.button_add_guide_list.clicked.connect(self.open_qrcode_dialog)
         self.ui.button_enter_operator.clicked.connect(self.enter_operator)
         self.ui.list_guide.itemClicked.connect(self.list_guide_itemClicked)
+        self.ui.button_settlement.clicked.connect(self.settlement)
         # 多线程
         self.qrcode_thread = event.qrcode.QRCodeThread()
         self.qrcode_thread.signal.connect(self.qrcode_thread_callback)
@@ -43,6 +45,24 @@ class MyWindow(QMainWindow):
         keyboard = KeyBoard.KeyBoard()
         keyboard.key.connect(self.on_keyboard)
         keyboard.init_key(widget_ui)
+
+    def settlement(self):
+        """
+        结算
+        :return:
+        """
+        if device.user_id == '':
+            QMessageBox.question(self, '请登录', '请先导入购物清单', QMessageBox.Yes)
+            return 0
+        a = QMessageBox.question(self, '结算', '你确定要结算吗?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if a == QMessageBox.Yes:
+            self.sql.update_order(self.buy_list.list)
+            self.buy_list.list.clear()
+            self.guide.get_list().clear()
+            self.ui.list_buy.clear()
+            self.ui.list_guide.clear()
+            device.user_id = ''
+            QMessageBox.question(self, '结算', '结算成功', QMessageBox.Yes)
 
     def list_guide_itemClicked(self):
         """
@@ -58,7 +78,6 @@ class MyWindow(QMainWindow):
         index = self.ui.list_guide.currentRow()
         x, y = self.guide.get_list()[index].area
         self.map_draw_point(x, y, f'{index + 1}', 2, 0)
-
 
     def init_map(self):
         """

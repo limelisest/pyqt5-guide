@@ -57,6 +57,7 @@ class QRcode_dialog(QDialog):
                     guide_list.append(item)
 
             self._signal.emit(guide_list)
+            device.user_id = user_id
             self.close()
         except json.JSONDecodeError:
             self.ui.label_error.setText(f'mqtt:{msg}\n数据错误，请重新扫码')

@@ -34,9 +34,9 @@
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>230</x>
+     <x>100</x>
      <y>210</y>
-     <width>561</width>
+     <width>571</width>
      <height>81</height>
     </rect>
    </property>
@@ -249,7 +249,7 @@
   <widget class="QWidget" name="widget_keyboard" native="true">
    <property name="geometry">
     <rect>
-     <x>230</x>
+     <x>100</x>
      <y>290</y>
      <width>570</width>
      <height>175</height>

@@ -56,6 +56,16 @@ class MySQl:
         else:
             return False
 
+    def reduce_item_num(self, _id, num):
+        cursor = self.connect.cursor()
+        try:
+            # 减少数目
+            sql = f"update stock set num = num-{num} where id='{_id}'"
+            cursor.execute(sql)
+            return True
+        except pymysql.Error:
+            return False
+
     def check_operator(self, _user, _password):
         print(f"【Operator Dialog】Enter:{_user},{_password}")
         cursor = self.connect.cursor()
@@ -95,6 +105,7 @@ class MySQl:
                 sql = f"insert into order_history set " \
                       f"item_id='{item_id}',user_id='{user_id}',time='{time_stamp}',num='{num}'"
                 cursor.execute(sql)
+                self.reduce_item_num(item_id, num)
             return True
         except pymysql.Error:
             return False

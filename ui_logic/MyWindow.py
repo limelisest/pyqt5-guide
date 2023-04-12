@@ -30,8 +30,6 @@ class MyWindow(QMainWindow):
         self.move(0, 0)
         self.init_map()
         # 事件绑定
-        self.ui.button_debug_2.clicked.connect(self.debug_2)
-        self.ui.button_debug_3.clicked.connect(self.debug_3)
         self.ui.button_add_guide_list.clicked.connect(self.open_qrcode_dialog)
         self.ui.button_enter_operator.clicked.connect(self.enter_operator)
         self.ui.list_guide.itemClicked.connect(self.list_guide_itemClicked)
@@ -49,6 +47,11 @@ class MyWindow(QMainWindow):
         keyboard = KeyBoard.KeyBoard()
         keyboard.key.connect(self.on_keyboard)
         keyboard.init_key(widget_ui)
+        # Debug
+        self.ui.button_debug_2.clicked.connect(self.debug_2)
+        self.ui.button_debug_3.clicked.connect(self.debug_3)
+        self.ui.button_debug_2.hide()
+        self.ui.button_debug_3.hide()
 
     def settlement(self):
         """
@@ -58,14 +61,20 @@ class MyWindow(QMainWindow):
         if device.user_id == '':
             QMessageBox.question(self, '请登录', '请先导入购物清单', QMessageBox.Yes)
             return 0
-        a = QMessageBox.question(self, '结算', '你确定要结算吗?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        a = QMessageBox.question(self, '结算', '您确定要结算吗?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if a == QMessageBox.Yes:
             self.sql.update_order(self.buy_list.list)
+            # 重置所有信息
             self.buy_list.list.clear()
             self.guide.get_list().clear()
             self.ui.list_buy.clear()
             self.ui.list_guide.clear()
-            device.user_id = ''
+            self.ui.label_price.setText("0 元")
+            self.ui.label_title.setText("")
+            self.ui.label_all_price.setText("0 元")
+            self.ui.label_guide_item_name.setText("")
+            self.ui.label_guide_item_area.setText("")
+            device.user_id = 'anonymous'
             QMessageBox.question(self, '结算', '结算成功', QMessageBox.Yes)
 
     def list_guide_itemClicked(self):
@@ -289,8 +298,10 @@ class MyWindow(QMainWindow):
     def guide_list_refresh(self):
         self.ui.list_guide.clear()
         if self.guide.get_list():
+            i = 0
             for item in self.guide.get_list():
                 self.guide_list_add_ui(item)
+                i += 1
             self.ui.label_guide_item_name.setText(f'{self.guide.get_list()[0].name}')
             self.ui.label_guide_item_area.setText(f'{self.guide.get_list()[0].area}')
 
@@ -383,7 +394,7 @@ class MyWindow(QMainWindow):
         layout_2 = QVBoxLayout()
 
         map_name = QLabel(f'{name}')
-        map_area = QLabel(f'[{area_x},{area_y}] ')
+        map_area = QLabel(f'序号：{self.ui.list_guide.count()}  坐标：[{area_x},{area_y}] ')
         map_num = QLabel(f"X {num}")
         map_num.setMaximumWidth(60)
 

@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import *
 import sys
 from ui_logic import MyWindow
+
 if __name__ == '__main__':
     # 先实例化 app 对象
     app = QApplication(sys.argv)

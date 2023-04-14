@@ -11,12 +11,12 @@ import event.sql
 import event.guide
 import event.item
 import event.qrcode
-import event.device
 import event.mqtt
 import event.rfid
 
 
 class MyWindow(QMainWindow):
+
     def __init__(self, parent=None):
         super().__init__(parent, Qt.Window)
         # 类初始化
@@ -58,9 +58,6 @@ class MyWindow(QMainWindow):
         结算
         :return:
         """
-        if device.user_id == '':
-            QMessageBox.question(self, '请登录', '请先导入购物清单', QMessageBox.Yes)
-            return 0
         a = QMessageBox.question(self, '结算', '您确定要结算吗?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if a == QMessageBox.Yes:
             self.sql.update_order(self.buy_list.list)
@@ -239,6 +236,7 @@ class MyWindow(QMainWindow):
             :return:
             """
             self.init_map()
+            self.ui.list_guide.clear()
             self.guide.set_list(guide_list)
             self.guide.list.sorted()
             if self.guide.get_list():
@@ -248,7 +246,7 @@ class MyWindow(QMainWindow):
                 self.map_draw_points_on_guide()
                 self.ui.label_guide_item_name.setText(f'{self.guide.get_list()[0].name}')
                 self.ui.label_guide_item_area.setText(f'{self.guide.get_list()[0].area}')
-            print(f"qrcode_dialog return:{guide_list}")
+            print(f"qrcode_dialog return:{guide_list},user_id:{device.user_id}")
 
         qrcode_dialog = QRcode_dialog.QRcode_dialog()
         qrcode_dialog.signal.connect(guide_list_refresh)
@@ -394,7 +392,7 @@ class MyWindow(QMainWindow):
         layout_2 = QVBoxLayout()
 
         map_name = QLabel(f'{name}')
-        map_area = QLabel(f'序号：{self.ui.list_guide.count()}  坐标：[{area_x},{area_y}] ')
+        map_area = QLabel(f'序号：{self.ui.list_guide.count()+1}  坐标：[{area_x},{area_y}] ')
         map_num = QLabel(f"X {num}")
         map_num.setMaximumWidth(60)
 

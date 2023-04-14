@@ -3,7 +3,7 @@ import time
 
 import pymysql
 from event.item import Item
-from event.device import user_id
+from event import device
 
 _ip = '120.79.71.233'
 _port = 3306
@@ -103,7 +103,7 @@ class MySQl:
                 item_id = item.id
                 num = item.num
                 sql = f"insert into order_history set " \
-                      f"item_id='{item_id}',user_id='{user_id}',time='{time_stamp}',num='{num}'"
+                      f"item_id='{item_id}',user_id='{device.user_id}',time='{time_stamp}',num='{num}'"
                 cursor.execute(sql)
                 self.reduce_item_num(item_id, num)
             return True
